@@ -4,9 +4,7 @@ import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import java.io.BufferedReader
 import java.io.IOException
-import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
@@ -53,28 +51,23 @@ class MainActivity : AppCompatActivity() {
                     val response = connection.responseCode
                     Log.d(TAG, "downloadXML(): response code was $response")
 
-                    val reader = BufferedReader(InputStreamReader(connection.inputStream))
-
-                    val inputBuffer = CharArray(500)
-                    var charsRead = 0
-                    while (charsRead >= 0) {
-                        charsRead = reader.read(inputBuffer) // End of stream returns a -1
-                        if (charsRead > 0) {
-                            xmlResult.append(String(inputBuffer, 0, charsRead))
-                        }
+                    connection.inputStream.buffered().reader().use {
+                        xmlResult.append(it.readText())
                     }
-                    reader.close()
 
                     Log.d(TAG, "Received ${xmlResult.length} bytes")
                     return xmlResult.toString()
-                } catch (e: MalformedURLException) {
-                    Log.e(TAG, "downloadXML(): Invalid URL ${e.message}")
-                } catch (e: IOException) {
-                    Log.e(TAG, "downloadXML(): IOException reading data: ${e.message}")
-                } catch (e: SecurityException) {
-                    Log.e(TAG, "downloadXML(): Security Exception. Needs permission? ${e.message}")
                 } catch (e: Exception) {
-                    Log.e(TAG, "downloadXML(): Unknown error occurred ${e.message}")
+                    val errorMessage = when (e) {
+                        is MalformedURLException -> "Invalid URL"
+                        is IOException -> "IO Exception reading data"
+                        is SecurityException -> {
+                            e.printStackTrace()
+                            "Security Exception. Needs Permission?"
+                        }
+                        else -> "Unknown Error"
+                    }
+                    Log.e(TAG, "downloadXML(): " + errorMessage + ": " + e.message)
                 }
 
                 return ""
