@@ -31,13 +31,22 @@ class FeedEntry {
 class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
 
+    // Must be private since the DownloadData class is also private
+    // Using "by lazy" so that the xmlListView exists by the first time we need this field
+    private val downloadData by lazy {DownloadData(this, xmlListView)}
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         Log.d(TAG, "onCreate() called")
-        val downloadData = DownloadData(this, xmlListView) // Synthetic view
         downloadData.execute("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=20/xml")
         Log.d(TAG, "onCreate(): done")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Cancelling the task is important that it doesn't pass data to the activity that is being destroyed
+        downloadData.cancel(true)
     }
 
     // First parameter is the String URL
