@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
-import android.widget.ArrayAdapter
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
@@ -70,8 +69,9 @@ class MainActivity : AppCompatActivity() {
                 parseApplications.parse(result)
 
                 // Parameters: Activity, resource that data goes into, list of objects to display
-                val arrayAdapter = ArrayAdapter<FeedEntry>(propContext, R.layout.list_item, parseApplications.applications)
-                propListView.adapter = arrayAdapter // can also use the setAdapter() method
+
+                val feedAdapter =  FeedAdapter(propContext, R.layout.list_record, parseApplications.applications)
+                propListView.adapter = feedAdapter
             }
 
             override fun doInBackground(vararg url: String?): String {
