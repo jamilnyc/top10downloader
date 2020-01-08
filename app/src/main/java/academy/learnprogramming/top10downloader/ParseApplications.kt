@@ -29,7 +29,6 @@ class ParseApplications {
                 when (eventType) {
                     // Beginning of the tag
                     XmlPullParser.START_TAG -> {
-                        Log.d(TAG, "parse(): Starting tag for $tagName")
                         if (tagName == "entry") {
                             inEntry = true // We're only interested in entry tags
                         }
@@ -41,7 +40,6 @@ class ParseApplications {
                     XmlPullParser.END_TAG -> {
                         // Only check the textValue at the END_TAG event to make sure
                         // the text is data that we actually want
-                        Log.d(TAG, "parse(): Ending tag for $tagName")
                         if (inEntry) {
                             // Fill out the data fields
                             when (tagName) {
@@ -62,12 +60,6 @@ class ParseApplications {
 
                 eventType = xpp.next()
             }
-
-            for (app in applications) {
-                Log.d(TAG, "####################")
-                Log.d(TAG, app.toString())
-            }
-
         } catch (e: Exception) {
             e.printStackTrace()
             status = false

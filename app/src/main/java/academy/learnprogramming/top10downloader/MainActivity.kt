@@ -69,7 +69,6 @@ class MainActivity : AppCompatActivity() {
                 parseApplications.parse(result)
 
                 // Parameters: Activity, resource that data goes into, list of objects to display
-
                 val feedAdapter =  FeedAdapter(propContext, R.layout.list_record, parseApplications.applications)
                 propListView.adapter = feedAdapter
             }
