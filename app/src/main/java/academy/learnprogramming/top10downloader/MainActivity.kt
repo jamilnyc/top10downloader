@@ -29,6 +29,9 @@ class FeedEntry {
     }
 }
 
+private const val URL_KEY = "feedUrlKey"
+private const val LIMIT_KEY = "feedLimitKey"
+
 class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
 
@@ -36,22 +39,38 @@ class MainActivity : AppCompatActivity() {
     // Using "by lazy" so that the xmlListView exists by the first time we need this field
     private var downloadData: DownloadData? = null
 
+    private var lastUrl: String = ""
+    private var refresh = false
+
     private var feedUrl: String = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=%d/xml"
     private var feedLimit = 10
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        if(savedInstanceState != null) {
+            feedUrl = savedInstanceState.getString(URL_KEY, feedUrl)
+            feedLimit = savedInstanceState.getInt(LIMIT_KEY, feedLimit)
+        }
+
         downloadUrl(feedUrl.format(feedLimit))
         Log.d(TAG, "onCreate is done")
     }
 
     private fun downloadUrl(feedUrl: String) {
+        if (lastUrl == feedUrl && !refresh) {
+            // Don't download, since the URL hasn't changed
+            Log.d(TAG, "downloadUrl: URL Unchanged - Not downloading again")
+            return
+        }
+
         Log.d(TAG, "downloadUrl starting AsyncTask")
         downloadData = DownloadData(this, xmlListView)
         downloadData?.execute(feedUrl)
         Log.d(TAG, "downloadUrl done")
+        lastUrl = feedUrl
+        refresh = false
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -81,11 +100,18 @@ class MainActivity : AppCompatActivity() {
                     Log.d(TAG, "onOptionsItemSelected: ${item.title} setting feedLimit unchanged")
                 }
             }
+            R.id.mnuRefresh -> refresh = true
             else -> return super.onOptionsItemSelected(item)
         }
 
         downloadUrl(feedUrl.format(feedLimit))
         return true
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(URL_KEY, feedUrl)
+        outState.putInt(LIMIT_KEY, feedLimit)
     }
 
     override fun onDestroy() {
